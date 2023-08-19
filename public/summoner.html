@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>League of Legends Summoner Info</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="profileInfo" style="display: flex; align-items: center;">
+        <img id="summonerIcon" style="width: 100px; height: 100px; margin-right: 20px;">
+        <div>
+            <h2 id="summonerName"></h2>
+            <p id="summonerLevel"></p>
+        </div>
+    </div>
+
+    <h2>Champion Masteries</h2>
+    <canvas id="masteryChart"></canvas>
+
+    <script>
+        const region = window.location.pathname.split('/')[1];
+        const summonerName = window.location.pathname.split('/')[2];
+
+        if (region && summonerName) {
+            $.get(`/api/summoner/${region}/${summonerName}`, function(data) {
+                const summonerInfo = data.summonerInfo;
+                const masteries = data.masteries;
+
+                document.getElementById('summonerIcon').src = `http://ddragon.leagueoflegends.com/cdn/13.16.1/img/profileicon/${summonerInfo.profileIconId}.png`;
+                document.getElementById('summonerName').innerText = summonerInfo.name;
+                document.getElementById('summonerLevel').innerText = `Summoner Level: ${summonerInfo.summonerLevel}`;
+
+                const championNames = masteries.map(mastery => mastery.championName);
+                const championPoints = masteries.map(mastery => mastery.championPoints);
+
+                const ctx = document.getElementById('masteryChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: championNames,
+                        datasets: [{
+                            label: 'Champion Mastery Points',
+                            data: championPoints,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

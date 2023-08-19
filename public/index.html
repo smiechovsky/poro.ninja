@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>League of Legends Player Lookup</title>
+</head>
+<body>
+    <h1>League of Legends Player Lookup</h1>
+    <form id="playerForm">
+        <label for="region">Select Region:</label>
+        <select id="region" name="region">
+            <option value="br">BR</option>
+            <option value="euw">EUW</option>
+            <option value="eune">EUNE</option>
+            <option value="jp">JP</option>
+            <option value="kr">KR</option>
+            <option value="lan">LAN</option>
+            <option value="las">LAS</option>
+            <option value="na">NA</option>
+            <option value="oc">OCE</option>
+            <option value="ru">RU</option>
+            <option value="tr">TR</option>
+            <option value="ph">PH</option>
+            <option value="sg">SG</option>
+            <option value="th">TH</option>
+            <option value="tw">TW</option>
+            <option value="vn">VN</option>
+        </select>
+        <br>
+        <label for="summonerName">Summoner Name:</label>
+        <input type="text" id="summonerName" name="summonerName" required>
+        <br>
+        <button type="submit">Search</button>
+    </form>
+
+    <script>
+        document.getElementById('playerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const regionMapping = {
+                'br': 'BR1',
+                'euw': 'EUW1',
+                'eune': 'EUN1',
+                'jp': 'JP1',
+                'kr': 'KR',
+                'lan': 'LA1',
+                'las': 'LA2',
+                'na': 'NA1',
+                'oc': 'OC1',
+                'ru': 'RU',
+                'tr': 'TR1',
+                'ph': 'PH2',
+                'sg': 'SG2',
+                'th': 'TH2',
+                'tw': 'TW2',
+                'vn': 'VN2'
+            };
+            const selectedRegion = document.getElementById('region').value;
+            const mappedRegion = regionMapping[selectedRegion];
+            const summonerName = document.getElementById('summonerName').value;
+            window.location.href = `/${selectedRegion}/${summonerName}`;
+        });
+    </script>
+</body>
+</html>
