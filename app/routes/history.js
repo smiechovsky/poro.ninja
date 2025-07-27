@@ -31,7 +31,32 @@ router.get('/:region/:user/history', async (req, res, next) => {
     );
 
     if (!rows.length) {
-      return res.send(`<h1>Mastery History for ${nickname}#${tag}</h1><p>No mastery history found for this user.</p>`);
+      return res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Mastery History - ${nickname}#${tag}</title>
+            <link rel="stylesheet" href="/app/web/styles.css">
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Mastery History</h1>
+                    <div class="subtitle">${nickname}#${tag} (${region.toUpperCase()})</div>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/" class="nav-link">← Back to Search</a>
+                    <a href="/${region}/${nickname}-${tag}/overview" class="nav-link">View Overview</a>
+                </div>
+                
+                <div class="error">No mastery history found for this user.</div>
+            </div>
+        </body>
+        </html>
+      `);
     }
 
     // Group entries by champion and detect changes
@@ -104,13 +129,25 @@ router.get('/:region/:user/history', async (req, res, next) => {
 
     // Generate HTML table
     let html = `
-      <h1>Mastery History for ${nickname}#${tag}</h1>
-      <table border="1" cellpadding="10">
-        <tr>
-          <th>Champion</th>
-          <th>Changes</th>
-          <th>Date</th>
-        </tr>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Mastery History - ${nickname}#${tag}</title>
+          <link rel="stylesheet" href="/app/web/styles.css">
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>Mastery History</h1>
+                  <div class="subtitle">${nickname}#${tag} (${region.toUpperCase()})</div>
+              </div>
+              
+              <div class="nav-links">
+                  <a href="/" class="nav-link">← Back to Search</a>
+                  <a href="/${region}/${nickname}-${tag}/overview" class="nav-link">View Overview</a>
+              </div>
     `;
 
     allEntries.forEach(entry => {
@@ -134,20 +171,32 @@ router.get('/:region/:user/history', async (req, res, next) => {
       const changesText = changes.length > 0 ? changes.join(', ') : 'No changes';
       
       html += `
-        <tr>
-          <td>
-            <a href="${championLink}">
-              <img src="${entry.champion_icon}" alt="${entry.champion_name}" style="width: 32px; height: 32px; vertical-align: middle;">
-              ${entry.champion_name}
-            </a>
-          </td>
-          <td>${changesText}</td>
-          <td>${entry.date}</td>
-        </tr>
+        <div class="history-entry">
+          <div class="history-header">
+            <div class="history-champion">
+              <a href="${championLink}">
+                <img src="${entry.champion_icon}" alt="${entry.champion_name}" class="champion-icon">
+              </a>
+              <a href="${championLink}" class="champion-name">${entry.champion_name}</a>
+            </div>
+            <div class="history-date">${entry.date}</div>
+          </div>
+          <div class="history-changes">
+            ${entry.points_gain > 0 ? `<div class="change-item change-positive">+${entry.points_gain} points</div>` : ''}
+            ${entry.level_up ? `<div class="change-item change-level">🎯 Level Up!</div>` : ''}
+            ${entry.token_gain ? `<div class="change-item change-positive">🎖️ +${entry.tokens_gained} token${entry.tokens_gained > 1 ? 's' : ''}</div>` : ''}
+            ${entry.grade_change ? `<div class="change-item change-level">⭐ New Grade: ${entry.grade_change}</div>` : ''}
+            ${changes.length === 0 ? '<div class="change-item">No changes</div>' : ''}
+          </div>
+        </div>
       `;
     });
 
-    html += '</table>';
+    html += `
+          </div>
+      </body>
+      </html>
+    `;
 
     res.send(html);
   } catch (err) {

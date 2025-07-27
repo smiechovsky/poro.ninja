@@ -110,17 +110,36 @@ router.get('/:region/:user/overview', async (req, res, next) => {
 
     // Generate HTML
     let html = `
-      <h1>Champion Mastery for ${nickname}#${tag}</h1>
-      <a href="/${region}/${nickname}-${tag}/history">View Mastery History</a>
-      <table border="1" cellpadding="10">
-        <tr>
-          <th>Champion Icon</th>
-          <th>Mastery Level</th>
-          <th>Mastery Points</th>
-          <th>Points to Next Level</th>
-          <th>Required Tokens</th>
-          <th>Required Grades</th>
-        </tr>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Champion Mastery - ${nickname}#${tag}</title>
+          <link rel="stylesheet" href="/app/web/styles.css">
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>Champion Mastery</h1>
+                  <div class="subtitle">${nickname}#${tag} (${region.toUpperCase()})</div>
+              </div>
+              
+              <div class="nav-links">
+                  <a href="/" class="nav-link">← Back to Search</a>
+                  <a href="/${region}/${nickname}-${tag}/history" class="nav-link">View Mastery History</a>
+              </div>
+              
+              <div class="data-table">
+                  <table>
+                      <tr>
+                          <th>Champion</th>
+                          <th>Level</th>
+                          <th>Points</th>
+                          <th>To Next Level</th>
+                          <th>Tokens</th>
+                          <th>Grades</th>
+                      </tr>
     `;
 
     for (const champion of masteryData) {
@@ -136,25 +155,25 @@ router.get('/:region/:user/overview', async (req, res, next) => {
       // Generate grades HTML
       let gradesHtml = '';
       if (requiredGradeList.length > 0) {
+        gradesHtml += '<div class="grades-container">';
         for (let i = 0; i < requiredGradeList.length; i++) {
           const requiredGrade = requiredGradeList[i];
           const achieved = achievedMarkers[i];
-          const style = achieved 
-            ? 'background-color: #4CAF50; color: white;' 
-            : 'background-color: transparent; color: #ccc;';
-          gradesHtml += `<div style="display: inline-block; width: 20px; height: 20px; margin: 0 5px; border: 1px solid black; text-align: center; line-height: 20px; ${style}">${requiredGrade}</div>`;
+          const className = achieved ? 'grade-box grade-achieved' : 'grade-box grade-required';
+          gradesHtml += `<div class="${className}">${requiredGrade}</div>`;
         }
+        gradesHtml += '</div>';
         
         // Show achieved grades info if available
         if (grades.achieved.length > 0) {
-          gradesHtml += `<br><small style="color: #4CAF50;">Achieved: ${grades.achieved.join(', ')}</small>`;
+          gradesHtml += `<div class="grade-info">Achieved: ${grades.achieved.join(', ')}</div>`;
         }
       } else {
         // Show achieved grades if no required grades
         if (grades.achieved.length > 0) {
-          gradesHtml = `<span style="color: #4CAF50;">Achieved: ${grades.achieved.join(', ')}</span>`;
+          gradesHtml = `<div class="grade-info">Achieved: ${grades.achieved.join(', ')}</div>`;
         } else {
-          gradesHtml = '<span style="color: #999;">No grades required</span>';
+          gradesHtml = '<div class="grade-info" style="color: #999;">No grades required</div>';
         }
       }
 
@@ -162,36 +181,45 @@ router.get('/:region/:user/overview', async (req, res, next) => {
       const tokenIcon = '/app/Icons/Mark_of_Mastery.svg';
       const tokensEarned = champion.tokensEarned || 0;
       const tokensRequired = champion.markRequiredForNextLevel || 0;
-      let tokensHtml = '';
+      let tokensHtml = '<div class="tokens-container">';
 
       for (let i = 0; i < tokensRequired; i++) {
-        const opacity = i < tokensEarned ? '' : 'opacity: 0.3;';
-        tokensHtml += `<img src="${tokenIcon}" style="width: 20px; height: 20px; ${opacity}" alt="Token">`;
+        const className = i < tokensEarned ? 'token-icon' : 'token-icon token-inactive';
+        tokensHtml += `<img src="${tokenIcon}" class="${className}" alt="Token">`;
       }
 
       if (tokensEarned > tokensRequired) {
         const extraTokens = tokensEarned - tokensRequired;
-        tokensHtml += ` + <img src="${tokenIcon}" style="width: 20px; height: 20px;" alt="Token"> x${extraTokens}`;
+        tokensHtml += `<span style="margin-left: 5px; color: #4CAF50;">+${extraTokens}</span>`;
       }
+      tokensHtml += '</div>';
 
       html += `
         <tr>
-          <td style="text-align: center;">
-            <a href="${championLink}">
-              <img src="${championIcon}" alt="${championName}" width="50" height="50">
-            </a><br>
-            <a href="${championLink}">${championName}</a>
+          <td>
+            <div class="champion-card">
+              <a href="${championLink}">
+                <img src="${championIcon}" alt="${championName}" class="champion-icon">
+              </a>
+              <a href="${championLink}" class="champion-name">${championName}</a>
+            </div>
           </td>
-          <td style="text-align: center;">${champion.championLevel}</td>
-          <td style="text-align: center;">${champion.championPoints}</td>
-          <td style="text-align: center;">${champion.championPointsUntilNextLevel}</td>
-          <td style="text-align: center;">${tokensHtml}</td>
-          <td style="text-align: center;">${gradesHtml}</td>
+          <td>${champion.championLevel}</td>
+          <td>${champion.championPoints.toLocaleString()}</td>
+          <td>${champion.championPointsUntilNextLevel.toLocaleString()}</td>
+          <td>${tokensHtml}</td>
+          <td>${gradesHtml}</td>
         </tr>
       `;
     }
 
-    html += '</table>';
+    html += `
+                  </table>
+              </div>
+          </div>
+      </body>
+      </html>
+    `;
 
     res.send(html);
   } catch (err) {
