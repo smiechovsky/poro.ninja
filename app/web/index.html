@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            background-color: #fff;
+            width: 450px;
+        }
+
+        .search-container input,
+        .search-container select,
+        .search-container button {
+            border: none;
+            height: 40px;
+            font-size: 16px;
+            padding: 0 10px;
+            outline: none;
+        }
+
+        .search-container input {
+            flex: 1;
+            width: 190px;
+            border-radius: 30px 0 0 30px;
+            position: relative;
+        }
+
+        .search-container input#tag {
+            flex: 1;
+            width: 30px;
+            height: 22px;
+            border-radius: 0 0 0 0;
+            border-right: 1px solid #ccc;
+            border-left: 1px solid #ccc;
+        }
+
+        .search-container button {
+            flex: 0.5;
+            border-radius: 0 30px 30px 0;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #45a049;
+        }
+
+        .suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 450px;
+            z-index: 1000;
+            display: none; /* Ustaw na 'block', gdy są podpowiedzi */
+        }
+
+        .suggestions div {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .suggestions div:hover {
+            background: #f0f0f0;
+        }
+
+        .search-row {
+            position: relative;
+            flex: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <form method="GET" action="/" class="search-container">
+        <!-- Nickname input with autocomplete -->
+        <div style="position: relative; flex: 2;">
+            <input type="text" id="nickname" name="nickname" placeholder="Enter nickname" required autocomplete="off">
+            <div id="nickname-suggestions" class="suggestions"></div>
+        </div>
+
+        <!-- Tag input -->
+        <input type="text" id="tag" name="tag" placeholder="#TAG" required>
+
+        <!-- Region dropdown -->
+        <select id="region" name="region" required>
+            <option value="">Region</option>
+            <option value="br1">BR</option>
+            <option value="euw1">EUW</option>
+            <option value="eun1">EUNE</option>
+            <option value="jp1">JP</option>
+            <option value="kr">KR</option>
+            <option value="la1">LAN</option>
+            <option value="la2">LAS</option>
+            <option value="na1">NA</option>
+            <option value="oc1">OCE</option>
+            <option value="ru">RU</option>
+            <option value="tr1">TR</option>
+            <option value="ph2">PH</option>
+            <option value="sg2">SG</option>
+            <option value="th2">TH</option>
+            <option value="tw2">TW</option>
+            <option value="vn2">VN</option>
+        </select>
+
+        <!-- Search button -->
+        <button type="submit">Search</button>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const nicknameInput = document.getElementById("nickname");
+            const tagInput = document.getElementById("tag");
+            const regionSelect = document.getElementById("region");
+            const nicknameSuggestionsBox = document.getElementById("nickname-suggestions");
+
+            // Autocomplete for nickname
+            nicknameInput.addEventListener("input", function() {
+                const query = nicknameInput.value.trim();
+                if (query.length < 3) {
+                    nicknameSuggestionsBox.style.display = "none";
+                    return;
+                }
+
+                fetch(`/search?query=${encodeURIComponent(query)}`)
+                    .then(r => r.json())
+                    .then(list => {
+                        nicknameSuggestionsBox.innerHTML = "";
+                        list.forEach(item => {
+                            const d = document.createElement('div');
+                            d.textContent = `${item.nickname}#${item.tag} (${item.region})`;
+                            d.addEventListener('click', () => {
+                                nicknameInput.value = item.nickname;
+                                tagInput.value = item.tag;
+                                regionSelect.value = item.regionCode;
+                                nicknameSuggestionsBox.style.display = 'none';
+                            });
+                            nicknameSuggestionsBox.appendChild(d);
+                        });
+                        nicknameSuggestionsBox.style.display = list.length ? 'block' : 'none';
+                    })
+                    .catch(console.error);
+                });
+
+                document.addEventListener('click', e => {
+                    if (!nicknameSuggestionsBox.contains(e.target) && e.target !== nicknameInput) {
+                        nicknameSuggestionsBox.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
