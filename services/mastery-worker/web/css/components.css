@@ -1,0 +1,76 @@
+/* Components CSS - Charts and History Styles */
+
+/* Chart Container */
+.chart-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 30px;
+  margin: 20px 0;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.chart-container canvas {
+  border-radius: 15px;
+}
+
+/* History Entries */
+.history-entry {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 15px 0;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.history-entry:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.history-champion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.history-date {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.history-changes {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.change-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.change-positive {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.change-level {
+  background: rgba(74, 144, 226, 0.2);
+  border-color: #4a90e2;
+  color: #4a90e2;
+} 

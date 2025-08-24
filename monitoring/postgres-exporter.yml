@@ -1,0 +1,39 @@
+# Postgres Exporter Configuration
+# Enable additional metrics for memory monitoring
+
+# Enable pg_stat_bgwriter metrics (buffer usage)
+pg_stat_bgwriter:
+  enabled: true
+
+# Enable pg_stat_database metrics (database statistics)
+pg_stat_database:
+  enabled: true
+
+# Enable pg_settings metrics (configuration)
+pg_settings:
+  enabled: true
+
+# Enable custom queries for memory monitoring
+custom_queries:
+  memory_usage:
+    query: |
+      SELECT 
+        'postgres_memory_usage' as metric,
+        pg_size_pretty(pg_database_size(current_database())) as value
+      FROM pg_database 
+      WHERE datname = current_database()
+    master: true
+    cache_seconds: 30
+
+  buffer_stats:
+    query: |
+      SELECT 
+        'postgres_buffer_hit_ratio' as metric,
+        CASE 
+          WHEN (heap_blks_hit + heap_blks_read) = 0 THEN 0
+          ELSE ROUND(100.0 * heap_blks_hit / (heap_blks_hit + heap_blks_read), 2)
+        END as value
+      FROM pg_statio_user_tables
+      LIMIT 1
+    master: true
+    cache_seconds: 30 

@@ -1,318 +1,529 @@
-# Poro.ninja - League of Legends Champion Mastery Tracker
+# Poro.ninja - League of Legends Mastery Tracking System
 
-A comprehensive Node.js application for tracking League of Legends champion mastery data, grades, and progression history. Built with Express.js, PostgreSQL, and Docker.
+Modular system for tracking champion mastery in League of Legends, built with microservices architecture.
 
-## 🎯 Overview
+## 🏗️ Project Architecture
 
-Poro.ninja is a web application that allows users to:
-- Search for League of Legends players by nickname and tag
-- View detailed champion mastery information including levels, points, and progression
-- Track champion grades (S+, S, A+, A, etc.) and mastery tokens
-- View historical mastery data and progression over time
-- Monitor mastery requirements and achievements
-
-## 🏗️ Architecture
-
-### Core Components
-
-#### **Backend Services**
-- **Express.js Server** (`app/server.js`) - Main application server
-- **PostgreSQL Database** - Data persistence with 4 main tables
-- **Riot Games API Integration** - Fetches player and mastery data
-- **Data Synchronization Service** - Automated background sync
-- **Champion Data Service** - Updates champion information from Data Dragon
-
-#### **Database Schema**
-- `AccountsToSync` - Player accounts to track
-- `ChampionMasteryHistory` - Historical mastery progression
-- `ChampionGrades` - Grade achievements and requirements
-- `Champions` - Champion metadata and images
-
-#### **API Routes**
-- `/` - Main search interface
-- `/search` - Account search with autocomplete
-- `/:region/:user/overview` - Champion mastery overview
-- `/:region/:user/history` - Mastery progression history
-- `/:region/:user/overview/:champion` - Individual champion details
+```
+poro.ninja/
+├── docker-compose.yml          # Orchestration of all services
+├── utils/
+│   └── initDb.js              # Universal database initialization system
+└── services/
+    ├── mastery-api/           # API service - data processing
+    │   ├── server.js          # Main API server
+    │   ├── init.sql           # Database schema (shared by all services)
+    │   ├── services/          # Business logic
+    │   │   ├── dataSync.js    # Mastery data synchronization
+    │   │   ├── riotApi.js     # Riot API integration
+    │   │   └── updateChampions.js # Champion updates
+    │   ├── debugger/          # Logging system
+    │   ├── utils/             # Helper utilities
+    │   │   ├── rateLimiter.js # Adaptive rate limiting
+    │   │   ├── batchProcessor.js # Batch processing
+    │   │   ├── batchSizeManager.js # Adaptive batch sizing
+    │   │   ├── memoryMonitor.js # Memory management
+    │   │   ├── syncScheduler.js # Continuous sync scheduling
+    │   │   └── processManager.js # Process lifecycle management
+    │   ├── package.json       # Dependencies
+    │   └── Dockerfile         # Container configuration
+    │
+    ├── mastery-worker/        # Web service - data display
+    │   ├── server.js          # Express server
+    │   ├── init.sql           # Database schema (duplicate)
+    │   ├── routes/            # Web endpoints
+    │   │   ├── overview.js    # Mastery overview
+    │   │   ├── championOverview.js # Champion details
+    │   │   ├── history.js     # Mastery history
+    │   │   ├── search.js      # Player search
+    │   │   └── index.js       # Homepage
+    │   ├── web/               # Frontend (HTML, CSS)
+    │   │   └── css/           # Modular CSS files
+    │   ├── Icons/             # Icons and assets
+    │   ├── debugger/          # Logging system
+    │   ├── utils/             # Helper utilities
+    │   ├── package.json       # Dependencies
+    │   └── Dockerfile         # Container configuration
+    │
+    ├── accounts-finder/       # Service - finding new players
+    │   ├── server.js          # Main service process
+    │   ├── init.sql           # Database schema (duplicate)
+    │   ├── services/          # Processing logic
+    │   │   ├── matchProcessor.js # Match processing
+    │   │   ├── rateLimiter.js # Rate limiting control
+    │   │   └── riotApi.js     # Riot API integration
+    │   ├── debugger/          # Logging system
+    │   ├── utils/             # Helper utilities
+    │   ├── package.json       # Dependencies
+    │   └── Dockerfile         # Container configuration
+    │
+    └── load-balancer/         # Nginx load balancer
+        ├── nginx.conf         # Nginx configuration
+        └── Dockerfile         # Container configuration
+```
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Requirements
 - Docker and Docker Compose
-- Riot Games API Key
-- PostgreSQL (included in Docker setup)
+- Riot Games API key
+- `.env` configuration file
 
-### Environment Variables
-Create a `.env` file with:
+### Start entire system
+```bash
+docker-compose up -d
+```
+
+### Start specific service
+```bash
+# API only
+docker-compose up mastery-api
+
+# Web interface only
+docker-compose up mastery-worker
+
+# New player finder only
+docker-compose up accounts-finder
+
+# Load balancer only
+docker-compose up load-balancer
+```
+
+## 🌐 System Services
+
+### Mastery API (Port: 8080)
+**Functions:**
+- Mastery data synchronization with Riot API
+- Automatic player account addition
+- Intelligent scanning with priorities
+- `/api/add-account` endpoint for adding accounts
+- `/api/force-sync` endpoint for manual sync testing
+
+**Performance Optimizations:**
+- **Parallel processing**: Up to 10 accounts processed simultaneously (5 per batch × 2 concurrent batches)
+- **Batch database operations**: Multiple mastery records inserted in single query
+- **Adaptive rate limiting**: Automatically adjusts API limits based on 429 errors
+- **Connection pooling**: Optimized database connections for parallel processing
+- **User ID caching**: Reduces database queries for repeated lookups
+
+**Intelligent scanning:**
+- Priority for new accounts (without `lastupdated`)
+- Spam protection (min. 15 min between scans)
+- Detailed progress reporting
+
+### Mastery Worker (Port: 3001)
+**Functions:**
+- Web interface at `mastery.smiechowski.com`
+- Champion mastery overview
+- Mastery change history
+- Player search
+- Statistics and analytics
+
+**Endpoints:**
+- `/` - Homepage
+- `/overview` - Mastery overview
+- `/champion/:id` - Champion details
+- `/history` - Mastery history
+- `/search` - Search
+
+### Accounts Finder
+**Functions:**
+- Automatic new player discovery
+- Match history processing (100 recent matches)
+- Optimization through scanned match tracking
+- Intelligent rate limiting management
+
+**Optimizations:**
+- `ScannedMatches` table prevents duplicates
+- Performance tracking (new accounts per match)
+- Detailed progress logging
+
+### Load Balancer (Nginx)
+**Functions:**
+- Load balancing between services
+- Rate limiting (API: 10r/s, Search: 5r/s)
+- Gzip compression
+- Static file caching
+- Health checks
+
+## 🗄️ Database (PostgreSQL)
+
+### Central schema (`init.sql`)
+```sql
+-- CORE TABLES
+AccountsToSync              # All player accounts
+
+-- MASTERY API TABLES  
+ChampionMasteryHistory      # Champion mastery history
+ChampionGrades             # Champion achievements
+Champions                  # Champion reference table
+
+-- ACCOUNTS FINDER TABLES
+ScannedMatches             # Scanned match tracking
+```
+
+### Centralization benefits:
+- Single file manages all tables
+- Automatic initialization by all services
+- Schema consistency between services
+- Easy addition of new tables
+
+## ⚙️ Configuration
+
+### Environment variables (.env)
 ```env
+# Riot API
 API_KEY=your_riot_api_key
-DB_HOST=db
+DDRAGON_Version=latest
+
+# Database
+DB_HOST=postgres
 DB_PORT=5432
 DB_DATABASE=poro_ninja
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
-DDRAGON_Version=15.6.1
-SyncInterval=900
-LOGS_LEVEL=1
+
+# Logging
+LOGS_LEVEL=0
+
+# Intervals
+SyncInterval=3600
+ACCOUNTS_FINDER_INTERVAL_SECONDS=3600
+MATCHES_PER_ACCOUNT=100
+
+# Performance optimization settings
+BATCH_SIZE=5                    # Accounts per batch (default: 5)
+MAX_CONCURRENT_BATCHES=2        # Concurrent batches (default: 2)
+RATE_LIMIT_LOG_INTERVAL=5000    # Rate limit log throttle in ms (default: 5000)
+PROGRESS_LOG_INTERVAL=50        # Progress log every N accounts (default: 50)
 ```
 
-### Installation & Running
-```bash
-# Clone the repository
-git clone <repository-url>
-cd poro.ninja
+### Logging levels (LOGS_LEVEL)
+- `0` - Basic logs (service start, database connection, loops)
+- `1` - Detailed logs (progress, rate limiting, summaries)
+- `2` - Debug logs (account processing, matches, participants)
 
-# Start the application
+**Log format:** `[SERVICE] [LOGS-LEVEL:X] Message`
+
+## 🔧 Advanced Optimization Systems
+
+### 1. Rate Limiter (Ogranicznik zapytań)
+
+**Cel:** Zapobiega przekraczaniu limitów API Riot (błędy 429).
+
+**Jak działa:**
+- **Liczy zapytania w oknie czasowym:**
+  - Mastery API: 20,000 zapytań na 10 sekund (max) → 4,000 zapytań na 10 sekund (min)
+  - Global API: 6,000 zapytań na 10 sekund (max) → 1,200 zapytań na 10 sekund (min)
+  - Accounts Finder: 20,000 zapytań na 10 sekund (max) → 10,000 zapytań na 10 sekund (min)
+
+- **Adaptive Mode:** Jeśli pojawiają się błędy 429, limity są dynamicznie zmniejszane:
+  - **Agresywna redukcja:** `backoffMultiplier *= 0.5` (do minimum 0.2)
+  - **Przywracanie:** Po 5 minutach bez błędów, `backoffMultiplier *= 1.02` (do maksimum 1.0)
+  - **Timeout Handling:** Dla błędów 504/ECONNRESET: `backoffMultiplier *= 0.8` (do minimum 0.5)
+
+- **Wartości:**
+  - **Mastery API:** 20,000 → 4,000 req/10s (backoff 0.2-1.0)
+  - **Accounts Finder:** 20,000 → 10,000 req/10s (backoff 0.5-1.0)
+  - **Global:** 6,000 → 1,200 req/10s (backoff 0.2-1.0)
+
+### 2. Batch Processing (Przetwarzanie wsadowe)
+
+**Cel:** Grupuje konta w "batch" (wsad) i przetwarza równolegle.
+
+**Jak działa:**
+- **Batch Size:** Rozmiar wsadu dynamicznie dostosowywany:
+  - **Minimalny:** 1 konto na batch
+  - **Maksymalny:** 3 konta na batch (Mastery API), 5 kont na batch (Accounts Finder)
+  - **Zwiększanie:** Jeśli `errorCount < 1` → `batchSize += 1` (powoli)
+  - **Zmniejszanie:** Jeśli `errorCount > 5` → `batchSize -= 1` (szybko)
+
+- **Max Concurrent Batches:**
+  - **Minimalny:** 1 batch równolegle
+  - **Maksymalny:** 1 batch równolegle (Mastery API), 2 batche równolegle (Accounts Finder)
+
+- **Korzyści:** 
+  - **Mastery API:** 1-3 konta × 1 batch = 1-3 konta równolegle
+  - **Accounts Finder:** 1-5 konta × 1-2 batche = 1-10 kont równolegle
+
+### 3. Adaptive Backoff (Adaptacyjne opóźnienia)
+
+**Cel:** Automatyczne wydłużanie czasu oczekiwania po błędach.
+
+**Jak działa:**
+- **Exponential Backoff:** Opóźnienie rośnie wykładniczo z każdą próbą
+  - **429 errors:** `waitTime = retryAfter * Math.pow(2, retryCount - 1)` (min 30s)
+  - **504/Timeout:** `waitTime = Math.pow(2, retryCount) * 5` (min 10s)
+  - **Max retries:** 5 prób przed porzuceniem
+
+- **Wartości:**
+  - **Minimalne opóźnienie:** 10-30 sekund
+  - **Maksymalne opóźnienie:** 160-480 sekund (po 5 próbach)
+  - **Recovery:** Po 200+ sukcesów, opóźnienia powoli wracają do normy
+
+### 4. Memory Management (Zarządzanie pamięcią)
+
+**Cel:** Zapobiega wyciekom pamięci i restartom.
+
+**Jak działa:**
+- **Monitoring:** Sprawdza zużycie pamięci co 5 minut
+- **Threshold:** 80% heap usage = wymuszenie garbage collection
+- **Forced GC:** Co 50 przetworzonych kont (jeśli `global.gc` dostępne)
+- **Cache limits:** User cache ograniczony do 500 wpisów
+
+- **Wartości:**
+  - **Check interval:** 300,000ms (5 minut)
+  - **Memory threshold:** 80% heap usage
+  - **GC frequency:** Co 50 kont
+  - **Cache size:** 500 wpisów
+
+### 5. Progress Logging & Scheduler Recovery
+
+**Cel:** Monitoruje postęp i automatycznie restartuje scheduler.
+
+**Jak działa:**
+- **Progress logging:** Co 10 przetworzonych kont
+- **Continuous mode:** Scheduler działa w pętli bez timeoutów
+- **Recovery:** Automatyczny restart po błędach
+- **Timeout:** 24 godziny (efektywnie wyłączony)
+
+- **Wartości:**
+  - **Log frequency:** Co 10 kont
+  - **Sync timeout:** 24 godziny (wyłączony)
+  - **Recovery delay:** 30 sekund po błędzie
+
+### 6. Graceful Shutdown & Error Handling
+
+**Cel:** Bezpieczne zamykanie i obsługa błędów.
+
+**Jak działa:**
+- **Signal handling:** SIGINT/SIGTERM → bezpieczne zamknięcie
+- **Database cleanup:** Zamyka połączenia z bazą
+- **Uncaught exceptions:** Loguje i kontynuuje pracę
+- **Unhandled rejections:** Loguje i kontynuuje pracę
+
+- **Wartości:**
+  - **Shutdown timeout:** 30 sekund
+  - **Database pool:** 20 max connections, 5 min connections
+  - **Connection timeout:** 30 sekund
+
+## 📊 Monitoring & Observability
+
+### Grafana Dashboard (Port: 3000)
+**Access:** `http://localhost:3000` (admin/admin)
+
+**Features:**
+- **System Resources:** CPU, Memory, Disk usage
+- **Container Metrics:** Individual container performance
+- **Service Metrics:** Mastery API, Accounts Finder, Mastery Worker stats
+- **Rate Limiting:** API limits, errors, wait times
+- **Database:** Connections, size, query performance
+- **Custom Metrics:** Accounts processed, new entries, matches scanned
+
+### Prometheus (Port: 9090)
+**Access:** `http://localhost:9090`
+
+**Metrics Collected:**
+- **System:** Node Exporter metrics (CPU, memory, disk, network)
+- **Containers:** cAdvisor metrics (container performance)
+- **Services:** Custom metrics from all Poro Ninja services
+- **Database:** PostgreSQL metrics (if postgres_exporter added)
+
+### cAdvisor (Port: 8081)
+**Access:** `http://localhost:8081`
+
+**Features:**
+- Real-time container resource usage
+- CPU, memory, network per container
+- Historical performance data
+- Container health status
+
+### Service Metrics Endpoints
+
+#### Mastery API (`http://localhost:8080/metrics`)
+```prometheus
+# Business metrics
+mastery_api_accounts_processed_total 1234
+mastery_api_new_entries_total 5678
+mastery_api_failed_accounts_total 12
+
+# Rate limiting
+mastery_api_rate_limit_remaining 15000
+mastery_api_rate_limit_errors_total 5
+
+# Performance
+mastery_api_batch_size 2
+mastery_api_concurrent_batches 1
+mastery_api_memory_usage_bytes 52428800
+```
+
+#### Mastery Worker (`http://localhost:3001/metrics`)
+```prometheus
+# Request metrics
+mastery_worker_requests_total 1000
+mastery_worker_requests_overview 500
+mastery_worker_requests_search 300
+
+# Error metrics
+mastery_worker_errors_total 5
+mastery_worker_404_errors 2
+mastery_worker_500_errors 1
+```
+
+#### Accounts Finder (internal metrics)
+```prometheus
+# Processing metrics
+accounts_finder_accounts_processed_total 5000
+accounts_finder_new_accounts_total 150
+accounts_finder_matches_processed_total 50000
+
+# Error metrics
+accounts_finder_errors_total 25
+accounts_finder_429_errors 10
+```
+
+### Quick Start Monitoring
+```bash
+# Start all services including monitoring
 docker-compose up -d
 
-# Access the application
-open http://localhost:8000
+# Access Grafana
+open http://localhost:3000
+# Login: admin/admin
+
+# Access Prometheus
+open http://localhost:9090
+
+# Access cAdvisor
+open http://localhost:8081
 ```
 
-## 📁 Project Structure
+### Custom Dashboards
+The system includes pre-configured dashboards:
+- **Poro Ninja Overview:** Main system dashboard
+- **Service Performance:** Individual service metrics
+- **Rate Limiting:** API limits and errors
+- **Database Health:** PostgreSQL performance
 
-```
-poro.ninja/
-├── app/
-│   ├── debugger/               # Logging and debugging utilities
-│   │   ├── api.js              # API call logging
-│   │   ├── config.js           # Log level configuration
-│   │   ├── database.js         # Database operation logging
-│   │   ├── overview.js         # Overview page logging
-│   │   ├── scheduler.js        # Sync process logging
-│   │   ├── server.js           # Server startup logging
-│   │   └── utils.js            # Utility function logging
-│   ├── Icons/                  # Static assets (mastery tokens)
-│   ├── routes/                 # Express.js route handlers
-│   │   ├── index.js            # Main route and search redirect
-│   │   ├── search.js           # Account search API
-│   │   ├── overview.js         # Champion mastery overview
-│   │   ├── history.js          # Mastery history tracking
-│   │   └── championOverview.js # Individual champion details
-│   ├── services/               # Business logic services
-│   │   ├── dataSync.js         # Data synchronization service
-│   │   ├── riotApi.js          # Riot Games API client
-│   │   ├── updateChampions.js  # Champion data updates
-│   │   └── dbService.js        # Database operations
-│   ├── utils/                  # Utility functions
-│   │   ├── initDb.js           # Database initialization
-│   │   ├── waitForDb.js        # Database connection waiting
-│   │   └── regions.js          # Region mapping utilities
-│   ├── web/                    # Frontend assets
-│   │   └── index.html          # Main search interface
-│   ├── db.js                   # Database connection pool
-│   ├── init.sql                # Database schema
-│   ├── scheduler.js            # Legacy scheduler (deprecated)
-│   └── server.js               # Main application server
-├── .env                        # Environment Variables
-├── docker-compose.yml          # Docker services configuration
-├── Dockerfile                  # Application container definition
-└── package.json                # Node.js dependencies
-```
+### Alerting (Future Enhancement)
+Planned alerting rules:
+- High CPU/Memory usage (>80%)
+- High error rate (>5%)
+- Rate limit exhaustion
+- Database connection issues
+- Service downtime
 
-## 🔧 Key Features
+## 🚀 Performance Optimizations
 
-### 1. **Account Search & Management**
-- Real-time search with autocomplete
-- Support for all League of Legends regions
-- Automatic account creation and tracking
+### Parallel Processing
+- **Batch size**: 1-3 accounts processed simultaneously per batch (Mastery API)
+- **Concurrent batches**: 1 batch running in parallel (Mastery API)
+- **Total concurrency**: Up to 3 accounts processed at once (Mastery API)
 
-### 2. **Champion Mastery Tracking**
-- Mastery levels (1-7) and points
-- Progress towards next level
-- Mastery tokens earned and required
-- Historical progression tracking
+### Database Optimizations
+- **Connection pooling**: 20 max connections, 5 min connections
+- **Batch INSERT**: Multiple mastery records in single query
+- **User ID caching**: Reduces repeated database lookups (500 entries max)
+- **Statement timeout**: 30 seconds to prevent hanging queries
 
-### 3. **Grade System Integration**
-- Champion grades (S+, S, A+, A, B+, B, C+, C, D+, D)
-- Grade requirements for mastery progression
-- Visual indicators for achieved vs required grades
-- Grade comparison and validation
+### Rate Limiting Improvements
+- **Increased limits**: 20,000 mastery requests per 10 seconds (max)
+- **Adaptive mode**: Automatically reduces limits on 429 errors (min 4,000)
+- **Exponential backoff**: Intelligent retry strategy (5 retries max)
+- **Global limit**: 6,000 requests per 10 seconds (max)
 
-### 4. **Automated Data Synchronization**
-- Background sync every 15 minutes (configurable)
-- Incremental updates to minimize API calls
-- Error handling and retry logic
-- Comprehensive logging system
+### Expected Performance Gains
+- **3-5x faster**: Parallel processing of accounts
+- **2-3x faster**: Batch database operations
+- **2-3x faster**: Increased rate limits
+- **Overall**: 5-10x improvement in sync speed
 
-### 5. **Comprehensive Logging**
-- Multi-level logging system (0-2)
-- Module-specific log prefixes
-- Database operation tracking
-- API call monitoring
+## 🔧 Development
 
-## 🗄️ Database Schema
-
-### AccountsToSync
-```sql
-CREATE TABLE AccountsToSync (
-    id SERIAL PRIMARY KEY,
-    region VARCHAR(10) NOT NULL,
-    nickname VARCHAR(100) NOT NULL,
-    tag VARCHAR(10) NOT NULL,
-    puuid VARCHAR(100) UNIQUE NOT NULL,
-    continent VARCHAR(20),
-    lastupdated TIMESTAMP DEFAULT NOW(),
-    createdat TIMESTAMP DEFAULT NOW()
-);
+### Local service startup
+```bash
+cd services/mastery-api
+npm install
+npm run dev
 ```
 
-### ChampionMasteryHistory
-```sql
-CREATE TABLE ChampionMasteryHistory (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES AccountsToSync(id) ON DELETE CASCADE,
-    champion_id INTEGER NOT NULL,
-    mastery_level INTEGER,
-    mastery_points INTEGER,
-    tokens_earned INTEGER,
-    points_since_last_level INTEGER,
-    points_until_next_level INTEGER,
-    first_seen TIMESTAMP DEFAULT NOW(),
-    last_seen TIMESTAMP DEFAULT NOW(),
-    tokens_required INTEGER,
-    CONSTRAINT unique_history UNIQUE (user_id, champion_id, mastery_level, mastery_points, tokens_earned)
-);
+### Adding new endpoint
+1. Edit file in `services/mastery-api/routes/`
+2. Add logic in `services/mastery-api/services/`
+3. Test locally
+4. Build and run container
+
+### Adding new table
+1. Add definition to central `init.sql`
+2. Add indexes for performance
+3. All services will automatically create the table
+
+## 📊 Monitoring
+
+### Health checks
+- API: `http://mastery.smiechowski.com/health`
+- Load balancer: `http://localhost/health`
+
+### Performance monitoring
+```bash
+# Check API health with performance stats
+curl http://mastery.smiechowski.com/health
+
+# Response includes:
+# - Database pool status
+# - Batch processing configuration
+# - Current performance metrics
 ```
 
-### ChampionGrades
-```sql
-CREATE TABLE ChampionGrades (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES AccountsToSync(id) ON DELETE CASCADE,
-    champion_id INTEGER NOT NULL,
-    achieved_grades TEXT,
-    required_grades TEXT,
-    new_grade VARCHAR(10),
-    first_seen TIMESTAMP DEFAULT NOW(),
-    last_seen TIMESTAMP DEFAULT NOW(),
-    UNIQUE (user_id, champion_id)
-);
+### Logs
+```bash
+# All services
+docker-compose logs
+
+# Specific service
+docker-compose logs mastery-api
+docker-compose logs mastery-worker
+docker-compose logs accounts-finder
 ```
 
-### Champions
-```sql
-CREATE TABLE Champions (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    image_url TEXT
-);
+## 🚀 Scaling
+
+### Adding new API instance
+```yaml
+# In docker-compose.yml
+mastery-api-2:
+  build: ./services/mastery-api
+  environment:
+    - API_KEY=${API_KEY}
+    # ... other variables
 ```
 
-## 🔌 API Integration
+### Performance tuning
+```env
+# For high-performance environments
+BATCH_SIZE=10
+MAX_CONCURRENT_BATCHES=3
 
-### Riot Games API Endpoints Used
-- **Account API**: `/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}`
-- **Champion Mastery API**: `/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}`
-- **Data Dragon API**: Champion metadata and images
-
-### Rate Limiting
-- Respects Riot Games API rate limits
-- Implements retry logic for failed requests
-- Efficient caching of champion data
-
-## 🐳 Docker Configuration
-
-### Services
-- **app**: Node.js application (port 8000)
-- **db**: PostgreSQL database (port 5432)
-
-### Volumes
-- `db_data`: Persistent PostgreSQL data storage
-
-## 📊 Logging System
-
-### Log Levels
-- **Level 0**: Essential logs only (startup, errors)
-- **Level 1**: Standard operation logs (sync status, database operations)
-- **Level 2**: Detailed debug logs (API calls, query details)
-
-### Log Format
-```
-[MODULE] [LOGS-LEVEL:X] Message
+# For conservative environments
+BATCH_SIZE=3
+MAX_CONCURRENT_BATCHES=1
 ```
 
-### Modules
-- `[SERVER]` - Server startup and configuration
-- `[UTILS]` - Database initialization and utilities
-- `[DATABASE]` - Database operations and errors
-- `[API]` - Riot Games API calls
-- `[SCHEDULER-SYNC]` - Data synchronization process
-- `[OVERVIEW]` - Overview page operations
+### Adding new service
+1. Create folder `services/new-service/`
+2. Add `server.js`, `package.json`, `Dockerfile`
+3. Add service to `docker-compose.yml`
+4. Update Nginx configuration
+5. Add new tables to central `init.sql`
 
-## 🔄 Data Synchronization
+## 🔮 Planned Extensions
 
-### Sync Process
-1. **Account Discovery**: Find accounts in database
-2. **API Data Fetch**: Retrieve current mastery data
-3. **Database Update**: Upsert mastery and grade information
-4. **History Tracking**: Record changes for historical analysis
-5. **Scheduling**: Schedule next sync cycle
-
-### Sync Configuration
-- **Default Interval**: 900 seconds (15 minutes)
-- **Configurable**: Via `SyncInterval` environment variable
-- **Error Handling**: Automatic retry on failures
-- **Logging**: Comprehensive sync process logging
-
-## 🎨 Frontend Features
-
-### Search Interface
-- Clean, modern design
-- Real-time autocomplete suggestions
-- Region selection support
-- Responsive layout
-
-### Mastery Overview
-- Tabular data presentation
-- Champion icons and links
-- Visual grade indicators
-- Token progress visualization
-- Links to detailed views
-
-### Historical Data
-- Mastery progression over time
-- Point accumulation tracking
-- Level progression visualization
-- Change detection and highlighting
-
-## 🛠️ Development
-
-### Adding New Features
-1. Create service in `app/services/`
-2. Add routes in `app/routes/`
-3. Update database schema if needed
-4. Add logging in `app/debugger/`
-5. Update frontend in `app/web/`
-
-### Testing
-- Manual testing via web interface
-- Database query validation
-- API response verification
-- Log level testing
-
-### Deployment
-- Docker-based deployment
-- Environment variable configuration
-- Database migration handling
-- Health check endpoints
+- `services/history-api/` - Match history
+- `services/challenges-api/` - Challenges
+- `services/reports-api/` - PDF/image generation
+- `services/redis/` - Cache
+- `services/monitoring/` - Monitoring and alerts
 
 ## 📝 License
 
-This project is a Node.js rewrite of a Riot mastery tracker application.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📞 Support
-
-For issues and questions:
-- Check the logs for error details
-- Verify API key configuration
-- Ensure database connectivity
-- Review environment variables
+Private project - not for public use.

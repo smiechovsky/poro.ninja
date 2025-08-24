@@ -1,0 +1,251 @@
+/* Search CSS - Search Form and Suggestions Styles */
+
+/* Search Form */
+.search-container {
+  display: grid;
+  grid-template-columns: 1fr auto; /* fields | button */
+  grid-template-areas:
+    "fields button"
+    "suggestions ."; /* suggestions align with fields (col 1), button fixed on the right */
+  align-items: stretch;
+  column-gap: 12px;
+  row-gap: 10px;
+  background: transparent;
+  padding: 0;
+  width: min(760px, 92vw);
+  margin: 32px auto;
+  position: relative; /* anchor suggestions */
+}
+
+.search-fields {
+  grid-area: fields;
+  position: relative;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr; /* nickname | tag | region - match suggestions */
+  column-gap: 0; /* separators will be borders, not gaps */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.search-container input,
+.search-container select {
+  border: none;
+  height: 45px;
+  font-size: 16px;
+  outline: none;
+  background: transparent;
+  color: #e0e0e0;
+}
+
+.search-container input::placeholder {
+  color: #888;
+}
+
+.search-container select {
+  text-align: center;
+  text-align-last: center;
+  -moz-text-align-last: center;
+}
+
+.search-container select option {
+  background: #2d2d2d;
+  color: #e0e0e0;
+  text-align: center;
+}
+
+.search-btn {
+  grid-area: button;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px; /* match full row height via stretch; keep horizontal padding only */
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: stretch; /* same height as fields row */
+  height: auto;
+  appearance: none; /* neutralize UA styles */
+}
+
+.search-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Search Fields */
+.search-field { position: relative; display: flex; }
+
+/* proportions handled by grid */
+
+.search-field input,
+.search-field select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #e0e0e0;
+  font-size: 16px;
+  outline: none;
+  padding: 0 16px; /* aligns with suggestions inner padding */
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.search-field:first-child input {
+  text-align: left;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(74, 144, 226, 0.5);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* vertical separators between fields */
+.search-field:not(:first-child) {
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.search-field:first-child input {
+  border-radius: 25px 0 0 25px;
+}
+/* Mirror rounding on the right side for the region select (desktop) */
+.search-field:last-child select {
+  border-radius: 0 25px 25px 0;
+}
+
+/* Suggestions */
+.suggestions {
+  /* Desktop: align strictly to the fields column */
+  grid-area: suggestions;
+  justify-self: stretch;   /* take full width of the first column */
+  max-width: 100%;
+  box-sizing: border-box;
+  background: rgba(45, 45, 45, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: none;
+}
+
+.suggestions div {
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr; /* nickname | tag | region */
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Ensure separators align with main form */
+/* grid already stretches children */
+
+.suggestions div > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e0e0e0 !important;
+  font-weight: normal !important;
+  font-size: 16px !important;
+  padding: 12px 16px; /* match inputs horizontal padding */
+  position: relative;
+}
+
+.suggestions div > div:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0; /* aligns with 1px border used between fields */
+  top: 6px;   /* match visual top inset of fields separators */
+  bottom: 6px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.suggestions div > div:first-child { justify-content: flex-start; text-align: left; }
+
+.suggestions div > div:nth-child(2) { text-align: center; }
+
+.suggestions div > div:last-child { text-align: center; }
+
+.suggestions div:last-child {
+  border-bottom: none;
+}
+
+.suggestions div:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.suggestions div:hover > div {
+  border-color: transparent;
+}
+
+/* Remove individual section highlighting */
+.suggestions div > div:hover {
+  background: transparent;
+} 
+
+/* Mobile layout */
+@media (max-width: 560px) {
+  .search-container { grid-template-columns: 1fr; grid-template-areas: "fields" "button" "suggestions"; row-gap: 10px; width: calc(100% - 40px); margin: 0 auto; padding: 0 0 0 0; }
+  .search-fields { grid-template-columns: 1fr; row-gap: 8px; position: relative; padding: 8px; }
+  .search-field { border-left: none !important; }
+  /* Remove desktop container visuals to avoid corner conflicts */
+  .search-fields {
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  /* soft glow accent */
+  .search-fields::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+    pointer-events: none;
+    background: radial-gradient(120% 60% at 10% 0%, rgba(255,255,255,0.08), transparent 60%);
+  }
+  /* Mobile: add visible borders for nickname, tag, region */
+  .search-field input, .search-field select {
+    text-align: left;
+    padding: 0 14px;
+    border-radius: 12px;
+    height: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  /* Override desktop rounding that zeroed the top-right/bottom-right corners */
+  .search-field:first-child input { border-radius: 12px; }
+  /* Override desktop right-side rounding for region on mobile */
+  .search-field:last-child select { border-radius: 12px; }
+  .search-field input:focus, .search-field select:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(74, 144, 226, 0.5);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+  .search-btn { width: 100%; border-radius: 12px; height: 46px; padding: 0 16px; align-self: auto; }
+  /* make suggestions visually match field widths including outer shadows */
+  .suggestions { box-shadow: 0 8px 32px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.18); }
+
+  /* place suggestions under the whole block (including button) */
+  .suggestions { position: relative; top: 0; left: 0; right: 0; width: 100%; grid-area: suggestions; margin: 8px 0 0 0; border-radius: 12px; padding: 0; justify-self: stretch; }
+  .suggestions div { grid-template-columns: 2fr 1fr 1fr; }
+  .suggestions div > div { font-size: 15px !important; padding: 12px 12px; }
+  .suggestions div > div::after { display: none; }
+}

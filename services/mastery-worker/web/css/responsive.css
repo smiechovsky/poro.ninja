@@ -1,0 +1,90 @@
+/* Responsive CSS - Mobile and Tablet Styles */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container { padding: 10px; }
+
+  .header h1 { font-size: 2rem; }
+
+  .mastery-progress-container { padding: 6px; }
+
+  .progress-percentage { font-size: 12px; }
+
+  .progress-details { flex-direction: column; gap: 2px; font-size: 9px; }
+
+  .data-table { font-size: 0.9rem; }
+
+  .data-table th, .data-table td { padding: 10px 8px; }
+
+  /* Ensure table headers are still clickable on mobile */
+  .data-table th { cursor: pointer; -webkit-tap-highlight-color: rgba(74, 144, 226, 0.3); touch-action: manipulation; }
+
+  .data-table th:hover { background: rgba(255, 255, 255, 0.15); transform: none; box-shadow: none; }
+
+  .data-table th:active { background: rgba(74, 144, 226, 0.2); transform: none; }
+
+  /* Ensure no-sort headers remain non-interactive on mobile */
+  .data-table th.no-sort { cursor: default; -webkit-tap-highlight-color: transparent; touch-action: auto; }
+
+  .data-table th.no-sort:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+
+  .data-table th.no-sort:active { background: rgba(255, 255, 255, 0.1); }
+
+  .nav-links { flex-direction: column; align-items: center; }
+  /* Overview mobile: keep table, add horizontal scroll with sticky first column */
+  .overview-page .data-table { overflow-x: auto; -webkit-overflow-scrolling: touch; position: relative; }
+  .overview-page .data-table table { min-width: 760px; }
+  .overview-page #masteryTable th:first-child,
+  .overview-page #masteryTable td:first-child {
+    position: sticky;
+    left: 0;
+    background: rgba(32, 32, 32, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  /* subtle right edge hint to scroll */
+  .overview-page .data-table::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 16px;
+    pointer-events: none;
+    background: linear-gradient(270deg, rgba(0,0,0,0.35), transparent);
+  }
+}
+
+@media (max-width: 480px) {
+  .mastery-progress-container { padding: 4px; }
+
+  .progress-percentage { font-size: 10px; }
+
+  .progress-details { font-size: 8px; }
+
+  .header h1 { font-size: 1.8rem; }
+
+  .header .subtitle { font-size: 1rem; }
+
+  /* Ensure table headers work on very small screens */
+  .data-table th { font-size: 0.8rem; padding: 8px 4px; cursor: pointer; -webkit-tap-highlight-color: rgba(74, 144, 226, 0.3); touch-action: manipulation; }
+
+  .data-table th:hover { background: rgba(255, 255, 255, 0.15); }
+
+  .data-table th:active { background: rgba(74, 144, 226, 0.2); }
+
+  /* Ensure no-sort headers remain non-interactive on very small screens */
+  .data-table th.no-sort { cursor: default; -webkit-tap-highlight-color: transparent; touch-action: auto; }
+
+  .data-table th.no-sort:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+
+  .data-table th.no-sort:active { background: rgba(255, 255, 255, 0.1); }
+
+  /* Adjust sort indicators for small screens */
+  .data-table th.asc::after, .data-table th.desc::after { font-size: 0.7rem; margin-left: 2px; }
+  /* On very small screens, hide less critical columns */
+  .overview-page #masteryTable th:nth-child(6),
+  .overview-page #masteryTable td:nth-child(6) { display: none; } /* hide Grades */
+  @media (max-width: 380px) {
+    .overview-page #masteryTable th:nth-child(5),
+    .overview-page #masteryTable td:nth-child(5) { display: none; } /* hide Tokens */
+  }
+}

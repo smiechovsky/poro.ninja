@@ -1,0 +1,755 @@
+{
+  "id": null,
+  "title": "Poro Ninja - System Overview",
+  "tags": ["poro-ninja", "monitoring"],
+  "style": "dark",
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Containers Resources",
+      "type": "row",
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 2,
+      "title": "Total Containers CPU Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".*poroninja.*\"}[5m])) * 100",
+          "legendFormat": "Total CPU %"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Total Containers Memory Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes{name=~\".*poroninja.*\"}) / 1024 / 1024",
+          "legendFormat": "Total Memory (MB)"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2000
+              },
+              {
+                "color": "red",
+                "value": 4000
+              }
+            ]
+          },
+          "unit": "MB"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Docker Volumes Usage",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "docker_volume_size_bytes{volume=\"poroninja_postgres_data\"} / 1024 / 1024",
+          "legendFormat": "postgres_data (MB)"
+        },
+        {
+          "expr": "docker_volume_size_bytes{volume=\"poroninja_prometheus_data\"} / 1024 / 1024",
+          "legendFormat": "prometheus_data (MB)"
+        },
+        {
+          "expr": "docker_volume_size_bytes{volume=\"poroninja_grafana_data\"} / 1024 / 1024",
+          "legendFormat": "grafana_data (MB)"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 9},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "MB"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Per-Service Resources",
+      "type": "row",
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "title": "Services CPU Usage (%)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*mastery-api.*\"}[5m]) * 100",
+          "legendFormat": "mastery-api"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*accounts-finder.*\"}[5m]) * 100",
+          "legendFormat": "accounts-finder"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*mastery-worker.*\"}[5m]) * 100",
+          "legendFormat": "mastery-worker"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*postgres.*\"}[5m]) * 100",
+          "legendFormat": "postgres"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*grafana.*\"}[5m]) * 100",
+          "legendFormat": "grafana"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*prometheus.*\"}[5m]) * 100",
+          "legendFormat": "prometheus"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*cadvisor.*\"}[5m]) * 100",
+          "legendFormat": "cadvisor"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*node-exporter.*\"}[5m]) * 100",
+          "legendFormat": "node-exporter"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*postgres-exporter.*\"}[5m]) * 100",
+          "legendFormat": "postgres-exporter"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*volume-metrics-exporter.*\"}[5m]) * 100",
+          "legendFormat": "volume-metrics-exporter"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*load-balancer.*\"}[5m]) * 100",
+          "legendFormat": "load-balancer"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*redis.*\"}[5m]) * 100",
+          "legendFormat": "redis"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 18},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Services Memory Usage (MB)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*mastery-api.*\"} / 1024 / 1024",
+          "legendFormat": "mastery-api"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*accounts-finder.*\"} / 1024 / 1024",
+          "legendFormat": "accounts-finder"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*mastery-worker.*\"} / 1024 / 1024",
+          "legendFormat": "mastery-worker"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*postgres.*\"} / 1024 / 1024",
+          "legendFormat": "postgres"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*grafana.*\"} / 1024 / 1024",
+          "legendFormat": "grafana"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*prometheus.*\"} / 1024 / 1024",
+          "legendFormat": "prometheus"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*cadvisor.*\"} / 1024 / 1024",
+          "legendFormat": "cadvisor"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*node-exporter.*\"} / 1024 / 1024",
+          "legendFormat": "node-exporter"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*postgres-exporter.*\"} / 1024 / 1024",
+          "legendFormat": "postgres-exporter"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*volume-metrics-exporter.*\"} / 1024 / 1024",
+          "legendFormat": "volume-metrics-exporter"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*load-balancer.*\"} / 1024 / 1024",
+          "legendFormat": "load-balancer"
+        },
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*redis.*\"} / 1024 / 1024",
+          "legendFormat": "redis"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 18},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 500
+              },
+              {
+                "color": "red",
+                "value": 800
+              }
+            ]
+          },
+          "unit": "MB"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Mastery API Optimization Metrics",
+      "type": "row",
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 16,
+      "title": "Mastery API - Batch Size & Concurrency",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "mastery_api_batch_size",
+          "legendFormat": "Batch Size"
+        },
+        {
+          "expr": "mastery_api_concurrent_batches",
+          "legendFormat": "Concurrent Batches"
+        },
+        {
+          "expr": "mastery_api_total_concurrency",
+          "legendFormat": "Total Concurrency"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 27},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Mastery API - Processing Rate & Success Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "mastery_api_processing_rate_accounts_per_minute",
+          "legendFormat": "Processing Rate (accounts/min)"
+        },
+        {
+          "expr": "mastery_api_success_rate_percent",
+          "legendFormat": "Success Rate (%)"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 27},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 60
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Mastery API - Error Rates",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "mastery_api_429_errors_total",
+          "legendFormat": "429 Rate Limit Errors"
+        },
+        {
+          "expr": "mastery_api_504_errors_total",
+          "legendFormat": "504 Timeout Errors"
+        },
+        {
+          "expr": "mastery_api_errors_total",
+          "legendFormat": "Total Errors"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 35},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Poro Ninja Services",
+      "type": "row",
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 9,
+      "title": "Mastery API - Accounts Processed",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "mastery_api_accounts_processed_total",
+          "legendFormat": "Total Accounts"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 44}
+    },
+    {
+      "id": 10,
+      "title": "Mastery API - New Entries",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "mastery_api_new_entries_total",
+          "legendFormat": "New Entries"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 44}
+    },
+    {
+      "id": 11,
+      "title": "Accounts Finder - New Accounts",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "accounts_finder_new_accounts_total",
+          "legendFormat": "New Accounts"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 44}
+    },
+    {
+      "id": 12,
+      "title": "Accounts Finder - Matches Processed",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "accounts_finder_matches_processed_total",
+          "legendFormat": "Matches"
+        }
+      ],
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 44}
+    },
+    {
+      "id": 13,
+      "title": "Current Resources Summary",
+      "type": "text",
+      "content": "**Current Resources Summary**\n\n**Total Containers CPU**: Sum of all container CPU usage\n**Total Containers Memory**: Sum of all container memory usage\n**Per-Service Breakdown**: Individual CPU and memory usage for each service\n\n**Services Monitored**:\n- **Application Services**: mastery-api, accounts-finder, mastery-worker\n- **Infrastructure**: postgres, grafana, prometheus, cadvisor, node-exporter, postgres-exporter, volume-metrics-exporter, load-balancer, redis\n\n**Data Source**: cAdvisor collects real-time metrics from Docker containers",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 48},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left"
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Docker Volumes Monitoring",
+      "type": "text",
+      "content": "**Docker Volumes Monitoring**\n\nThis panel shows the actual size of your 3 Docker volumes:\n- **postgres_data**: PostgreSQL database files\n- **prometheus_data**: Prometheus metrics storage\n- **grafana_data**: Grafana dashboards and settings\n\n**Historical tracking**: You can see how these volumes grow over time as data accumulates.\n\n**Note**: These are the actual volumes used by your Docker containers, not system disk usage.",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 52},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left"
+          }
+        }
+      }
+    }
+  
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s"
+} 

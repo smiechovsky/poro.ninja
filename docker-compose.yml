@@ -1,19 +1,18 @@
+version: '3.8'
 services:
-  app:
-    build: .
+  # Load Balancer
+  load-balancer:
+    build: ./services/load-balancer
     ports:
-      - "8000:8000"
-    environment:
-      - API_KEY=${API_KEY}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DDRAGON_Version=${DDRAGON_Version}
-      - SyncInterval=${SyncInterval}
+      - "80:80"
+    depends_on:
+      - mastery-worker
+    restart: unless-stopped
+    networks:
+      - poro-network
 
-  db:
+  # Database
+  postgres:
     image: postgres:15
     environment:
       POSTGRES_USER: ${DB_USERNAME}
@@ -22,7 +21,270 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/mastery-api/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - poro-network
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=5432"
+
+  # Mastery API Service (data processing and worker)
+  mastery-api:
+    build: ./services/mastery-api
+    environment:
+      - API_KEY=${API_KEY}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DDRAGON_Version=${DDRAGON_Version}
+      - LOGS_LEVEL=${LOGS_LEVEL}
+      - SYNC_INTERVAL=${SyncInterval}
+      # Performance optimization settings - very conservative for stability
+      - BATCH_SIZE=${BATCH_SIZE:-1}
+      - MAX_CONCURRENT_BATCHES=${MAX_CONCURRENT_BATCHES:-1}
+      - RATE_LIMIT_LOG_INTERVAL=${RATE_LIMIT_LOG_INTERVAL:-5000}
+      - VIP_SYNC_INTERVAL_HOURS=${VIP_SYNC_INTERVAL_HOURS:-12}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    networks:
+      - poro-network
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
+
+  # Mastery Worker (data viewing service)
+  mastery-worker:
+    build: ./services/mastery-worker
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - LOGS_LEVEL=${LOGS_LEVEL}
+      - LEADERBOARDS_CACHE_ENABLED=${LEADERBOARDS_CACHE_ENABLED:-1}
+      - LEADERBOARDS_CACHE_TTL_SECONDS=${LEADERBOARDS_CACHE_TTL_SECONDS:-3600}
+      - LEADERBOARDS_CACHE_PREFIX=${LEADERBOARDS_CACHE_PREFIX:-poro}
+      - LEADERBOARDS_REFRESH_INTERVAL_MS=${LEADERBOARDS_REFRESH_INTERVAL_MS:-3600000}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - poro-network
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=3001"
+      - "prometheus.io/path=/metrics"
+
+  # Accounts Finder Service
+  accounts-finder:
+    build: ./services/accounts-finder
+    environment:
+      - API_KEY=${API_KEY}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - LOGS_LEVEL=${LOGS_LEVEL}
+      - ACCOUNTS_FINDER_INTERVAL_SECONDS=${ACCOUNTS_FINDER_INTERVAL_SECONDS:-3600}
+      - MATCHES_PER_ACCOUNT=${MATCHES_PER_ACCOUNT:-100}
+      - VIP_SYNC_INTERVAL_HOURS=${VIP_SYNC_INTERVAL_HOURS:-12}
+      - VIP_MATCHES_PER_ACCOUNT=${VIP_MATCHES_PER_ACCOUNT:-50}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - poro-network
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=3002"
+      - "prometheus.io/path=/metrics"
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - poro-network
+
+  # Grafana - Visualization dashboard
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    restart: unless-stopped
+    networks:
+      - poro-network
+    depends_on:
+      - prometheus
+
+  # cAdvisor - Container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8081:8080"
+    privileged: true
+    user: root
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    restart: unless-stopped
+    networks:
+      - poro-network
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8080"
+      - "prometheus.io/path=/metrics"
+
+  # Node Exporter - Host metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    privileged: true
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|run/user)($$|/)'
+    restart: unless-stopped
+    networks:
+      - poro-network
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9100"
+
+  # PostgreSQL Exporter - Database metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE}?sslmode=disable"
+      PG_EXPORTER_EXTEND_QUERY_PATH: "/etc/postgres_exporter/queries.yaml"
+    volumes:
+      - ./monitoring/postgres-exporter.yml:/etc/postgres_exporter/queries.yaml:ro
+    restart: unless-stopped
+    networks:
+      - poro-network
+    depends_on:
+      - postgres
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9187"
+
+  # Volume Metrics Exporter - Docker volume sizes
+  volume-metrics-exporter:
+    build: ./services/volume-metrics-exporter
+    privileged: true
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker:/var/lib/docker:ro
+    restart: unless-stopped
+    networks:
+      - poro-network
+    ports:
+      - "9106:9106"
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9106"
+      - "prometheus.io/path=/metrics"
+
+  # API Metrics Exporter - Combined API and account sync metrics
+  api-metrics-exporter:
+    build: ./services/api-metrics-exporter
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - ACCOUNTS_FINDER_URL=http://accounts-finder:3002
+      - MASTERY_API_URL=http://mastery-api:8080
+    depends_on:
+      - postgres
+      - accounts-finder
+      - mastery-api
+    restart: unless-stopped
+    networks:
+      - poro-network
+    ports:
+      - "9107:9107"
+    # Add monitoring labels
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9107"
+      - "prometheus.io/path=/metrics"
+
+  # Redis - Cache
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - poro-network
 
 volumes:
-  db_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  poro-network:
+    driver: bridge

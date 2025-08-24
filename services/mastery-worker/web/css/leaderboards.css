@@ -1,0 +1,283 @@
+/* Leaderboards CSS - Specific styles for leaderboards pages */
+
+/* Search section styling */
+.search-section {
+  margin: 20px 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  max-width: 500px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.search-button {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.search-button:hover {
+  background: linear-gradient(135deg, #357abd 0%, #2d6da3 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.search-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.2);
+}
+
+/* Player link styling */
+.player-link {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding: 5px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.player-link:hover {
+  color: #357abd;
+  background: rgba(74, 144, 226, 0.1);
+  text-decoration: none;
+}
+
+/* Separator row styling */
+.separator-row {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.separator {
+  text-align: center;
+  padding: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* Highlighted player row */
+.highlighted-player {
+  background: rgba(74, 144, 226, 0.15) !important;
+  border-left: 4px solid #4a90e2;
+}
+
+.highlighted-player:hover {
+  background: rgba(74, 144, 226, 0.25) !important;
+}
+
+/* Suggestion placeholder styling */
+.suggestion-placeholder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+  padding: 8px 12px;
+  z-index: 1;
+  font-family: inherit;
+}
+
+/* Rank column styling */
+.data-table td:first-child {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+/* Top 3 ranks special styling removed to keep uniform column color */
+
+/* Responsive design for search form */
+@media (max-width: 768px) {
+  .search-form {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .search-input,
+  .search-button {
+    width: 100%;
+  }
+  
+  .suggestions {
+    position: relative;
+    margin-top: 5px;
+  }
+}
+
+/* Champion card improvements for leaderboards */
+.champion-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.champion-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.champion-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: border-color 0.2s ease;
+}
+
+.champion-card:hover .champion-icon {
+  border-color: #4a90e2;
+}
+
+.champion-name {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1em;
+  transition: color 0.2s ease;
+  text-align: left;
+}
+
+.champion-name:hover {
+  color: #357abd;
+  text-decoration: none;
+}
+
+/* Per-column special styling removed to keep columns uniform, matching overview */
+
+/* Table header uses default from tables.css for uniform color */
+
+/* Row hover uses default from tables.css */
+
+/* Loading state for search */
+.search-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Animation for new results */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.separator-row,
+.highlighted-player {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* No results styling */
+.no-results {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.no-results-message {
+  text-align: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Search field styling for leaderboards */
+.search-field {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+/* Search row styling */
+.search-row {
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 2px solid rgba(74, 144, 226, 0.2);
+}
+
+.search-row .search-form {
+  padding: 8px 15px;
+  margin: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  backdrop-filter: none;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-row .search-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  flex: 1;
+}
+
+.search-row .search-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.search-row .search-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+} 

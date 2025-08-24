@@ -1,0 +1,154 @@
+/* Tables CSS - Data Tables and Champion Cards */
+
+/* Tables */
+.data-table {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  overflow: visible; /* allow inner content to create scroll if needed */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
+}
+
+.data-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 20px 15px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  user-select: none;
+}
+
+.data-table th:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #4a90e2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.data-table th:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(74, 144, 226, 0.2);
+}
+
+/* Sort indicators */
+.data-table th.asc::after {
+  content: ' ▲';
+  color: #4a90e2;
+  font-size: 0.8rem;
+  margin-left: 5px;
+}
+
+.data-table th.desc::after {
+  content: ' ▼';
+  color: #4a90e2;
+  font-size: 0.8rem;
+  margin-left: 5px;
+}
+
+/* Non-sortable headers */
+.data-table th.no-sort {
+  cursor: default;
+  user-select: none;
+}
+
+.data-table th.no-sort:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: none;
+  box-shadow: none;
+}
+
+.data-table th.no-sort:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.data-table th.no-sort::before {
+  display: none;
+}
+
+.data-table th.no-sort::after {
+  display: none;
+}
+
+/* Add subtle indicator that headers are clickable */
+.data-table th::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(74, 144, 226, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.data-table th:hover::before {
+  opacity: 1;
+}
+
+.data-table td {
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
+}
+
+.data-table tr:hover td {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Champion Cards */
+.champion-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.champion-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.champion-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.champion-name {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.champion-name:hover {
+  color: #357abd;
+} 

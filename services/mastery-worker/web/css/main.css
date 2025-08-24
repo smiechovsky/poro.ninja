@@ -1,0 +1,10 @@
+/* Main CSS - Imports all CSS modules */
+
+/* Import all CSS modules */
+@import url('./base.css');
+@import url('./header.css');
+@import url('./search.css');
+@import url('./tables.css');
+@import url('./mastery.css');
+@import url('./components.css');
+@import url('./responsive.css');

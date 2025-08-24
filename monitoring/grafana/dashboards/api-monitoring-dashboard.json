@@ -1,0 +1,506 @@
+{
+  "id": null,
+  "title": "API Monitoring Dashboard",
+  "tags": ["api", "monitoring", "poro-ninja"],
+  "style": "dark",
+  "timezone": "browser",
+  "panels": [
+      {
+        "id": 1,
+        "title": "API Requests Remaining",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "api_requests_remaining{service=\"total\"}",
+            "legendFormat": "Total Remaining"
+          },
+          {
+            "expr": "api_requests_remaining{service=\"accounts-finder\"}",
+            "legendFormat": "Accounts Finder"
+          },
+          {
+            "expr": "api_requests_remaining{service=\"mastery-api\"}",
+            "legendFormat": "Mastery API"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "displayMode": "list",
+              "orientation": "horizontal"
+            },
+            "mappings": [],
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1000
+                },
+                {
+                  "color": "green",
+                  "value": 5000
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "API Request Usage Percentage",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "api_requests_usage_percent{service=\"total\"}",
+            "legendFormat": "Total Usage %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "displayMode": "gradient",
+              "orientation": "auto",
+              "reduceOptions": {
+                "calcs": ["lastNotNull"],
+                "fields": "",
+                "values": false
+              },
+              "showThresholdLabels": false,
+              "showThresholdMarkers": true
+            },
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 70
+                },
+                {
+                  "color": "red",
+                  "value": 90
+                }
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "API Requests by Endpoint (Total over 1m)",
+        "type": "timeseries",
+        "targets": [
+          { "expr": "increase(api_endpoint_requests_used_total{service=\"accounts-finder\",endpoint=\"match-ids\"}[1m])", "legendFormat": "Accounts Finder - Match IDs" },
+          { "expr": "increase(api_endpoint_requests_used_total{service=\"accounts-finder\",endpoint=\"match-details\"}[1m])", "legendFormat": "Accounts Finder - Match Details" },
+          { "expr": "increase(api_endpoint_requests_used_total{service=\"accounts-finder\",endpoint=\"account-info\"}[1m])", "legendFormat": "Accounts Finder - Account Info" },
+          { "expr": "increase(api_endpoint_requests_used_total{service=\"mastery-api\",endpoint=\"mastery\"}[1m]) or increase(mastery_api_mastery_requests_normal_total[1m])", "legendFormat": "Mastery API - Mastery" },
+          { "expr": "increase(mastery_api_mastery_requests_priority_total[1m])", "legendFormat": "Mastery API - Mastery VIP" },
+          { "expr": "increase(api_endpoint_requests_used_total{service=\"mastery-api\",endpoint=\"priority-force\"}[1m])", "legendFormat": "Mastery API - Forced Sync" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "vis": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 19,
+        "title": "Total Mastery Records Over Time",
+        "type": "timeseries",
+        "targets": [
+          { "expr": "db_total_mastery_records", "legendFormat": "Mastery Records" }
+        ],
+        "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "showPoints": "never" }, "unit": "short" } },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 56 }
+      },
+      {
+        "id": 20,
+        "title": "Total Scanned Matches by Continent",
+        "type": "bargauge",
+        "targets": [
+          { "expr": "db_scanned_matches_total", "legendFormat": "{{continent}}" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "short" } },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 56 }
+      },
+      {
+        "id": 4,
+        "title": "Rate Limit Errors & VIP",
+        "type": "stat",
+        "targets": [
+          { "expr": "increase(api_rate_limit_errors_total{service=\"total\"}[1h])", "legendFormat": "Total Errors (1h)" },
+          { "expr": "increase(api_rate_limit_errors_total{service=\"accounts-finder\"}[1h])", "legendFormat": "Accounts Finder (1h)" },
+          { "expr": "increase(api_rate_limit_errors_total{service=\"mastery-api\"}[1h])", "legendFormat": "Mastery API (1h)" },
+          { "expr": "increase(mastery_api_vip_sync_runs_total[1h])", "legendFormat": "VIP runs (1h)" },
+          { "expr": "increase(mastery_api_vip_accounts_processed_total[1h])", "legendFormat": "VIP accounts (1h)" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "displayMode": "list",
+              "orientation": "horizontal"
+            },
+            "mappings": [],
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 5
+                },
+                {
+                  "color": "red",
+                  "value": 20
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        }
+      },
+      {
+        "id": 5,
+        "title": "Total Accounts Over Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "accounts_total",
+            "legendFormat": "Total Accounts"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": { "mode": "palette-classic" },
+            "custom": {
+              "drawStyle": "line",
+              "showPoints": "never",
+              "lineWidth": 2,
+              "spanNulls": true
+            },
+            "mappings": [],
+            "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] },
+            "unit": "short"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }
+      },
+      {
+        "id": 6,
+        "title": "Account Synchronization Timeline",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "accounts_synced_1h",
+            "legendFormat": "1 Hour"
+          },
+          {
+            "expr": "accounts_synced_3h",
+            "legendFormat": "3 Hours"
+          },
+          {
+            "expr": "accounts_synced_6h",
+            "legendFormat": "6 Hours"
+          },
+          {
+            "expr": "accounts_synced_12h",
+            "legendFormat": "12 Hours"
+          },
+          {
+            "expr": "accounts_synced_24h",
+            "legendFormat": "24 Hours"
+          },
+          {
+            "expr": "accounts_synced_2d",
+            "legendFormat": "2 Days"
+          },
+          {
+            "expr": "accounts_synced_3d",
+            "legendFormat": "3 Days"
+          },
+          {
+            "expr": "accounts_synced_5d",
+            "legendFormat": "5 Days"
+          },
+          {
+            "expr": "accounts_synced_7d",
+            "legendFormat": "7 Days"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "vis": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 24
+        }
+      },
+      {
+        "id": 7,
+        "title": "Current Run Progress",
+        "type": "gauge",
+        "targets": [
+          { "expr": "100 * sum(mastery_api_accounts_processed_total) / sum(accounts_total)", "legendFormat": "Run Progress" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "percent", "decimals": 2, "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 25 }, { "color": "green", "value": 60 } ] }, "custom": { "displayMode": "gradient", "showThresholdLabels": false, "showThresholdMarkers": true } } },
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 32 }
+      },
+      {
+        "id": 24,
+        "title": "VIP Progress",
+        "type": "gauge",
+        "targets": [
+          { "expr": "mastery_api_vip_progress_percent", "legendFormat": "VIP Progress" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "percent", "decimals": 2, "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 25 }, { "color": "green", "value": 60 } ] }, "custom": { "displayMode": "gradient", "showThresholdLabels": false, "showThresholdMarkers": true } } },
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 32 }
+      },
+      {
+        "id": 8,
+        "title": "API Usage by App (Used vs Limit)",
+        "type": "bargauge",
+        "targets": [
+          { "expr": "api_requests_limit{service=\"accounts-finder\"} - api_requests_remaining{service=\"accounts-finder\"}", "legendFormat": "Accounts Finder Used" },
+          { "expr": "api_requests_limit{service=\"accounts-finder\"}", "legendFormat": "Accounts Finder Limit" },
+          { "expr": "api_requests_limit{service=\"mastery-api\"} - api_requests_remaining{service=\"mastery-api\"}", "legendFormat": "Mastery API Used" },
+          { "expr": "api_requests_limit{service=\"mastery-api\"}", "legendFormat": "Mastery API Limit" },
+          { "expr": "increase(mastery_api_mastery_requests_priority_total[5m])", "legendFormat": "Mastery API VIP Used (5m)" },
+          { "expr": "rl_budget_used_priority", "legendFormat": "VIP Budget Used (2m)" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "short" } },
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 32 }
+      },
+
+      {
+        "id": 9,
+        "title": "Processing (Total accounts per 5m)",
+        "type": "timeseries",
+        "targets": [
+          { "expr": "increase(mastery_api_accounts_processed_total[5m])", "legendFormat": "Processed (5m)" }
+        ],
+        "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "showPoints": "never" }, "unit": "short" } },
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 }
+      },
+
+      {
+        "id": 10,
+        "title": "Requests per Service (Total over 5m)",
+        "type": "timeseries",
+        "targets": [
+          { "expr": "increase(api_requests_used_total{service=\"accounts-finder\"}[5m])", "legendFormat": "Accounts Finder (5m)" },
+          { "expr": "increase(api_requests_used_total{service=\"mastery-api\"}[5m])", "legendFormat": "Mastery API (5m)" },
+          { "expr": "increase(api_requests_used_total{service=\"total\"}[5m])", "legendFormat": "Total (5m)" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "short" } },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 48 }
+      },
+
+      {
+        "id": 11,
+        "title": "Real-time Run Summary (incl. VIP)",
+        "type": "table",
+        "targets": [
+          { "expr": "mastery_api_accounts_processed_total", "legendFormat": "processed" },
+          { "expr": "accounts_total", "legendFormat": "total" },
+          { "expr": "(mastery_api_accounts_processed_total / accounts_total) * 100", "legendFormat": "progress_percent" },
+          { "expr": "mastery_api_processing_rate_accounts_per_minute", "legendFormat": "rate_acc_per_min" },
+          { "expr": "mastery_api_new_entries_total", "legendFormat": "new_entries" },
+          { "expr": "mastery_api_failed_accounts_total", "legendFormat": "failed" },
+          { "expr": "mastery_api_vip_sync_duration_seconds", "legendFormat": "vip_sync_duration_s" },
+          { "expr": "accounts_finder_vip_loop_duration_seconds", "legendFormat": "vip_loop_duration_s" },
+          { "expr": "accounts_finder_vip_accounts_processed_total", "legendFormat": "vip_loop_accounts_total" },
+          { "expr": "accounts_finder_vip_matches_processed_total", "legendFormat": "vip_loop_matches_total" }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 48 }
+      }
+      ,{
+        "id": 21,
+        "title": "Shared API Budget (2m)",
+        "type": "timeseries",
+        "targets": [
+          { "expr": "rl_budget_used_total", "legendFormat": "Used (2m)" },
+          { "expr": "rl_budget_limit_total", "legendFormat": "Limit (2m)" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "showPoints": "never" } } },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 64 }
+      }
+      ,{
+        "id": 22,
+        "title": "Budget by Category (2m)",
+        "type": "bargauge",
+        "targets": [
+          { "expr": "rl_budget_used_discovery", "legendFormat": "discovery" },
+          { "expr": "rl_budget_used_priority", "legendFormat": "priority" },
+          { "expr": "rl_budget_used_stale", "legendFormat": "stale" },
+          { "expr": "rl_budget_used_background", "legendFormat": "background" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "short" } },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 64 }
+      }
+      ,{
+        "id": 23,
+        "title": "Global Usage 10s vs Limit",
+        "type": "timeseries",
+        "targets": [
+          { "expr": "rl_global_used_10s", "legendFormat": "used(10s)" },
+          { "expr": "rl_global_limit_10s", "legendFormat": "limit(10s)" },
+          { "expr": "rl_mastery_used_10s", "legendFormat": "mastery used(10s)" },
+          { "expr": "rl_mastery_limit_10s", "legendFormat": "mastery limit(10s)" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "showPoints": "never" } } },
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 72 }
+      }
+      
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+  "refresh": "10s",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": [],
+    "gnetId": null,
+    "uid": "api-monitoring"
+} 
